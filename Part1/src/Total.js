@@ -5,7 +5,7 @@ const Total = ({ parts }) => {
     <div>
       <p>
         Number of exercises{' '}
-        {parts.exercises1 + parts.exercises2 + parts.exercises3}
+        {parts[0].exercises + parts[1].exercises + parts[2].exercises}
       </p>
     </div>
   );
