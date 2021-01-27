@@ -6,16 +6,27 @@ GET http://localhost:3001/info
 
 ###
 
-GET http://localhost:3001/api/persons/7
+GET http://localhost:3001/api/persons/601161112195be14fd235fbc
 
 
 ###
 
-DELETE http://localhost:3001/api/persons/404579
+DELETE http://localhost:3001/api/persons/600e351163944c1e8ec4b4cc
 
 ###
 
 POST http://localhost:3001/api/persons/
+Content-Type: application/json
+
+{
+    "name":"mudits",
+    "number":"243234"
+    
+}
+
+###
+
+PUT http://localhost:3001/api/persons/600e34dcc6e09b1e71fa8793
 Content-Type: application/json
 
 {

@@ -1,11 +1,16 @@
 const express = require("express");
 const app = express();
-
+const cors = require('cors')
+const config = require('./config')
+const mongoose = require('mongoose')
+const person = require('./models/person')
 app.use(express.json());
 const morgan = require("morgan");
 morgan.token("custom", (req, res) => {
   return "POST" === req.method ? JSON.stringify(req.body) : " ";
 });
+
+app.use(cors())
 
 app.use(
   morgan(
@@ -13,34 +18,15 @@ app.use(
   )
 );
 
-let notes = [
-  {
-    id: 1,
-    name: "mudit",
-    number: 92182318,
-  },
-  {
-    id: 2,
-    name: "mudit",
-    number: 92182318,
-  },
-  {
-    id: 3,
-    name: "mudit",
-    number: 92182318,
-  },
-  {
-    id: 4,
-    name: "mudit",
-    number: 92182318,
-  },
-];
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
 
+
+const People = person
+
 app.get("/api/persons", (req, res) => {
-  res.json(notes);
+  People.find({}).then((person) => res.json(person))
 });
 
 app.get("/info", (req, res) => {
@@ -52,23 +38,34 @@ app.get("/info", (req, res) => {
   res.send(response);
 });
 
-app.get("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const person = notes.find((x) => x.id === id);
-  if (person) {
-    res.json(person);
-  } else {
-    res.status(404).end();
+app.get("/api/persons/:id", async (req, res,next) => {
+  try {
+    const person = await People.findById(req.params.id)
+    if (!person) {
+      return res.sendStatus(404)
+    }
+    res.json(person)
+  } catch (error) {
+    next(error)
   }
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const np = notes.filter((x) => x.id !== id);
-  res.status(204).end();
+app.delete("/api/persons/:id",async (req, res,next) => {
+  try{
+    const person = await People.findById(req.params.id)
+    if(!person){
+      return res.status(404).json({
+        error:"person does not exist!!"
+      })
+    }
+    await People.findByIdAndRemove(req.params.id)
+    res.json({ success: true })
+  }catch(err){
+    next(err)
+  }
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons",async (req, res,next) => {
   const { name, number } = req.body;
   if (!name || !number) {
     return res.status(400).json({
@@ -76,21 +73,53 @@ app.post("/api/persons", (req, res) => {
     });
   }
 
-  const item = notes.find((x) => x.name === name);
+  const item = await People.findOne({name:name})
   if (item) {
     return res.status(400).json({
       error: "name already exists",
     });
   }
   const person = {
-    id: getRandomInt(1000000),
     name,
     number,
   };
-
-  notes = notes.concat(person);
-  res.json(person);
+  const newPerson = await new People(person)
+  try {
+    await newPerson.save()
+    res.json(newPerson)
+  } catch (error) {
+    next(error)
+  }
 });
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  const note = {
+    name: body.name,
+    number: body.number,
+  }
+
+  People.findByIdAndUpdate(request.params.id, note, { new: true })
+    .then(updatedNote => {
+      response.json(updatedNote)
+    })
+    .catch(error => next(error))
+})
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+
+  next(error)
+}
+
+app.use(errorHandler)
+
+
 
 const PORT = 3001;
 app.listen(PORT, () => {
