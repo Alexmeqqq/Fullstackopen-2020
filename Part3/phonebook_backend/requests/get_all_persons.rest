@@ -11,7 +11,7 @@ GET http://localhost:3001/api/persons/601161112195be14fd235fbc
 
 ###
 
-DELETE http://localhost:3001/api/persons/600e351163944c1e8ec4b4cc
+DELETE http://localhost:3001/api/persons/6015049916dc7c2eafe7ac3c
 
 ###
 
@@ -19,8 +19,8 @@ POST http://localhost:3001/api/persons/
 Content-Type: application/json
 
 {
-    "name":"mudits",
-    "number":"243234"
+    "name":"mudit",
+    "number":"24323121"
     
 }
 
