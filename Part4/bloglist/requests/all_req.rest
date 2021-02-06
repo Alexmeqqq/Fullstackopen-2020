@@ -7,8 +7,11 @@ POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
 {
-    "title":"Okami",
-    "author":"Japaneese",
-    "url":"www.fitgirl.com",
-    "likes":4
+    "title":"FIFA21",
+    "author":"EaSports",
+    "url":"www.easports.com",
+    "likes":5
 }
+
+###
+DELETE http://localhost:3003/api/blogs/6017c243c5da1027d270f654

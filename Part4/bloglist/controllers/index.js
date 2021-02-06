@@ -36,4 +36,18 @@ blogRouter.post('/', (request, response,next) => {
       })
       .catch(err => next(err))
 })    
+blogRouter.delete('/:id',async (req,res,next) => {
+  try{
+    const person = await Blog.findById(req.params.id)
+    if(!person){
+      return res.status(404).json({
+        error:'person does not exist!!'
+      })
+    }
+    await Blog.findByIdAndRemove(req.params.id)
+    res.status(204).json({ success: true })
+  }catch(err){
+    next(err)
+  }
+})
 module.exports = blogRouter

@@ -19,7 +19,8 @@ const blogSchema = new mongoose.Schema({
     },
     likes: {
         required:false,
-        type:Number
+        type:Number,
+        default:0
     }
 })
 blogSchema.set('toJSON',{
