@@ -1,0 +1,31 @@
+GET http://localhost:3003/api/blogs/
+
+###
+POST http://localhost:3003/api/blogs/
+Content-Type: application/json
+
+{
+    "title": "Parasite",
+    "author": "Mudit",
+    "url": "www.mddlefinger.in",
+    "likes": 12
+}
+
+###
+
+DELETE http://localhost:3003/api/blogs/602fb2824cef354efbadae15
+
+###
+
+GET http://localhost:3003/api/blogs/6031cd58b96ebc10f5902994
+###
+
+PUT http://localhost:3003/api/blogs/602fb52508acf150a0549c8b
+Content-Type: application/json
+
+{
+    "title": "harry",
+    "author": "JK Rowling",
+    "url": "www.mddlefinger.in",
+    "likes": 12
+}
