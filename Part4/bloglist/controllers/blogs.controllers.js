@@ -1,26 +1,42 @@
 const blogsRouter = require("express").Router();
 const Blog = require("../models/blog.model");
-
-blogsRouter.get("/", (request, response) => {
-  Blog.find({}).then((blogs) => {
-    response.json(blogs);
-  });
+const User = require("../models/user.model");
+const jwt = require("jsonwebtoken");
+const Config = require("../utils/config");
+blogsRouter.get("/", async (request, response) => {
+  const blogs = await Blog.find({}).populate("user", { username: 1, name: 1 });
+  response.json(blogs);
 });
 
-blogsRouter.post("/", (request, response) => {
-  const blog = new Blog(request.body);
+const getTokenFrom = (request) => {
+  const authorization = request.get("authorization");
+  if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
+    return authorization.substring(7);
+  }
+  return null;
+};
 
-  blog.save().then((result) => {
-    response.status(201).json(result);
+blogsRouter.post("/", async (request, response) => {
+  const token = getTokenFrom(request);
+  const decodedToken = jwt.verify(token, Config.SECRET);
+  if (!token || !decodedToken.id) {
+    return response.status(401).json({ error: "token missing or invalid" });
+  }
+  const user = await User.findById(decodedToken.id);
+  const blog = new Blog({
+    ...request.body,
+    user: user.id,
   });
+  const savedBlog = await blog.save();
+  user.blogs = user.blogs.concat(savedBlog.id);
+  await user.save();
+  response.status(201).json(savedBlog);
 });
 
-blogsRouter.delete("/:id", (request, response, next) => {
-  Blog.findByIdAndRemove(request.params.id)
-    .then(() => {
-      response.status(204).end();
-    })
-    .catch((err) => next(err));
+blogsRouter.delete("/:id", async (request, response) => {
+  const blog = await Blog.findById(request.params.id);
+  await blog.remove();
+  response.status(204).end();
 });
 
 blogsRouter.get("/:id", (request, response, next) => {
@@ -35,20 +51,16 @@ blogsRouter.get("/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-blogsRouter.put("/:id", (req, res, next) => {
-  const body = req.body;
+blogsRouter.put("/:id", async (req, res) => {
+  const body = await req.body;
   const x = {
     title: body.title,
     author: body.author,
     url: body.url,
     likes: body.likes,
   };
-
-  Blog.findByIdAndUpdate(req.params.id, x, { new: true })
-    .then((updated) => {
-      res.json(updated);
-    })
-    .catch((error) => next(error));
+  const ans = await Blog.findByIdAndUpdate(req.params.id, x, { new: true });
+  res.json(ans);
 });
 
 module.exports = blogsRouter;
